@@ -1,0 +1,15 @@
+on load:
+    set {blocks.clear::*} to dirt, cobblestone and glass #The blocks you want cleared
+
+on place:
+    {blocks.clear::*} contains event-block
+    add location of event-block to {blocks::*}
+
+command /blockclear:
+    permission: *
+    trigger:
+        loop {blocks::*}:
+            set block at loop-value to air
+
+every 5 minutes:
+    make console execute command "/blockclear"
