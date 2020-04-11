@@ -1,0 +1,64 @@
+options:
+    prefix: &7[&eMines&7]
+    wrong: "{@prefix} &7Correct Usage: &c/mine set/reset/check/auto"
+on load:
+    set {mines.blocks::stone} to stone
+    set {mines.blocks::coal} to coal ore
+
+command /mine [<text>] [<text>] [<text>]:
+    permission: skript.mines
+    trigger:
+        if arg-1 is "set":
+            {mines.blocks::%arg-2%} is set
+            set {mines::%arg-3%::pos1} to {position::%uuid of player%::1}
+            set {mines::%arg-3%::pos2} to {position::%uuid of player%::2}
+            set {mines::%arg-3%::type} to arg-2
+            send colored "&aMine of %arg-2% named %arg-3% is set"
+        else if arg-1 is "reset":
+            if {mines::%arg-2%::type} is set:
+                loop all blocks within {mines::%arg-2%::pos1} and {mines::%arg-2%::pos2}:
+                    set loop-block to {mines.blocks::%{mines::%arg-2%::type}%}
+                broadcast "{@prefix} &e%arg-2% reset"
+            else:
+                send colored {@wrong}
+        else if arg-1 is "check":
+            if {mines::%arg-2%::type} is set:
+                loop all blocks within {mines::%arg-2%::pos1} and {mines::%arg-2%::pos2}:
+                    add 1 to {_max}
+                    if loop-block is air:
+                        add 1 to {_empty}
+                if {_empty} / {_max} >= 0.8:
+                    make console execute command "/mine reset %arg-2%"
+                else:
+                    send colored "{@prefix} &c%arg-2% isn't empty enough"
+            else:
+                send colored {@wrong}
+        else if arg-1 is "auto":
+            if {mines::%arg-2%::type} is set:
+                add arg-2 to {mines.auto::*}
+                send colored "{@prefix} &aAdded %arg-2% to auto reset mines"
+            else:
+                send colored {@wrong}
+
+every minute:
+    loop {mines.auto::*}:
+        make console execute command "/mine check %loop-value%"
+
+command /wand:
+	permission: *
+	trigger:
+		give player stick named "&dWand"
+
+on leftclick with stick:
+	name of player's tool is "&dWand"
+	cancel event
+	set {position::%uuid of player%::1} to location of event-block
+	send "&dPostion one is set to %{position::%uuid of player%::1}%"
+
+on rightclick with stick:
+	name of player's tool is "&dWand"
+	cancel event
+	set {position::%uuid of player%::2} to location of event-block
+	send "&dPostion two is set to %{position::%uuid of player%::2}%"
+
+
