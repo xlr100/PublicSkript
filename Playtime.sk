@@ -1,0 +1,76 @@
+options:
+    prefix: &6&lPlaytime »
+
+every second:
+    loop all players:
+        add 1 to {playtime::seconds::%uuid of loop-player%}
+        if {playtime::seconds::%uuid of loop-player%} >= 60:
+            remove 60 from {playtime::seconds::%uuid of loop-player%}
+            add 1 to {playtime::minutes::%uuid of loop-player%}
+            if {playtime::minutes::%uuid of loop-player%} >= 60:
+                remove 60 from {playtime::minutes::%uuid of loop-player%}
+                add 1 to {playtime::hours::%uuid of loop-player%}
+
+command /playtime [<offline player = %player%>]:
+    trigger:
+        if "%arg%" is "top":
+            set {_menu} to chest inventory with 5 rows named "Playtime Hours Leaderboard"
+            loop integers from 0 to 8:
+                set slot loop-value of {_menu} to black glass pane named " "
+            loop integers from 36 to 44:
+                set slot loop-value of {_menu} to black glass pane named " "
+            set slot 9, 17, 18, 26 and 27 and 35 of {_menu} to black glass pane named " "
+            set slot 36 of {_menu} to barrier named "&cClose"
+            loop {playtime::hours::*}:
+                add 1 to {_size}
+                if {_low.to.high.list::%loop-value%} is not set:
+                    set {_low.to.high.list::%loop-value%} to loop-index
+                else:
+                    set {_n} to 0
+                    loop {_size} times:
+                        set {_n} to {_n}+1
+                        {_low.to.high.list::%loop-value-1%.%{_n}%} is not set
+                        set {_low.to.high.list::%loop-value-1%.%{_n}%} to loop-index
+                        stop loop
+            wait 1 tick
+            set {_n} to size of {_low.to.high.list::*}
+            loop {_low.to.high.list::*}:
+                set {_high.to.low.list::%{_n}%} to loop-value
+                set {_n} to {_n}-1
+            set {_topnumber} to 1
+            loop {_high.to.low.list::*}:
+                set {_player} to "%loop-value%" parsed as offline player
+                if "%{_player}%" != "null":
+                    if {_topnumber} is 1:
+                        set {_slot} to 13
+                    else if {_topnumber} is 2:
+                        set {_slot} to 21
+                    else if {_topnumber} is 3:
+                        set {_slot} to 23
+                    else if {_topnumber} < 11:
+                        set {_slot} to {_topnumber} + 24
+                    set {_uuid} to uuid of {_player}
+                    set slot {_slot} of {_menu} to {_player}'s skull named "&7%{_topnumber}%. &b%{_player}%" lored "&7Playtime Hours &8» &6%{playtime::hours::%{_uuid}%}%"
+                    add 1 to {_topnumber}
+                    if {_topnumber} > 10:
+                        exit loop
+            open {_menu} to player
+            set {inventory::%player's uuid%} to "playtime.leaderboard"
+            
+        else:
+            set {_u} to uuid of arg
+            if {playtime::seconds::%{_u}%} is set:
+                set {_string} to "{@prefix} &b%arg%&7's playtime is &e%{playtime::seconds::%{_u}%}% &7seconds"
+                if {playtime::minutes::%{_u}%} is set:
+                    set {_string} to "%{_string}% &e%{playtime::minutes::%{_u}%}% &7minutes"
+                    if {playtime::hours::%{_u}%} is set:
+                        set {_string} to "%{_string}% and &e%{playtime::hours::%{_u}%}% &7hours"
+                send {_string}
+            else:
+                send "{@prefix} &b%arg% &chas no playtime"
+
+on inventory click:
+    {inventory::%player's uuid%} is "playtime.leaderboard"
+    cancel event
+    if event-slot is barrier:
+        close player's inventory
