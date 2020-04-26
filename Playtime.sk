@@ -1,5 +1,8 @@
+#Made by xlr100#6932 (For any bugs)
+
 options:
-    prefix: &6&lPlaytime »
+    prefix: &6&lPlaytime » #Change the prefix in chat
+    cooldown: 5 seconds #Change the cooldown for the command
 
 every second:
     loop all players:
@@ -11,9 +14,14 @@ every second:
                 remove 60 from {playtime::minutes::%uuid of loop-player%}
                 add 1 to {playtime::hours::%uuid of loop-player%}
 
+on join:
+    add 1 to {playtime::joins::%uuid of player%}
+
 command /playtime [<offline player = %player%>]:
+    cooldown: {@cooldown}
+    cooldown message: &cYou need to wait &7%remaining time% &cto do this again
     trigger:
-        if "%arg%" is "top":
+        if "%arg%" is "top": #The playtime top is based on playtime hours, so you will only able to see players with at least 1 hour of playtime
             set {_menu} to chest inventory with 5 rows named "Playtime Hours Leaderboard"
             loop integers from 0 to 8:
                 set slot loop-value of {_menu} to black glass pane named " "
@@ -50,7 +58,8 @@ command /playtime [<offline player = %player%>]:
                     else if {_topnumber} < 11:
                         set {_slot} to {_topnumber} + 24
                     set {_uuid} to uuid of {_player}
-                    set slot {_slot} of {_menu} to {_player}'s skull named "&7%{_topnumber}%. &b%{_player}%" lored "&7Playtime Hours &8» &6%{playtime::hours::%{_uuid}%}%"
+                    set {_head} to {_player}'s skull
+                    set slot {_slot} of {_menu} to {_player}'s skull named "&7%{_topnumber}%. &b%{_player}%" with lore "&7Playtime Hours &8» &6%{playtime::hours::%{_uuid}%}%"
                     add 1 to {_topnumber}
                     if {_topnumber} > 10:
                         exit loop
@@ -60,17 +69,21 @@ command /playtime [<offline player = %player%>]:
         else:
             set {_u} to uuid of arg
             if {playtime::seconds::%{_u}%} is set:
-                set {_string} to "{@prefix} &b%arg%&7's playtime is &e%{playtime::seconds::%{_u}%}% &7seconds"
+                set {_string} to "{@prefix} &b%arg%&7's playtime is &e%{playtime::seconds::%{_u}%}% &7second(s)"
                 if {playtime::minutes::%{_u}%} is set:
-                    set {_string} to "%{_string}% &e%{playtime::minutes::%{_u}%}% &7minutes"
+                    set {_string} to "%{_string}% &e%{playtime::minutes::%{_u}%}% &7minute(s)"
                     if {playtime::hours::%{_u}%} is set:
-                        set {_string} to "%{_string}% and &e%{playtime::hours::%{_u}%}% &7hours"
+                        set {_string} to "%{_string}% and &e%{playtime::hours::%{_u}%}% &7hour(s)"
                 send {_string}
+                send colored "{@prefix} &b%arg% &7joined &e%{playtime::joins::%{_u}%} ? 0% &7time(s)"
             else:
-                send "{@prefix} &b%arg% &chas no playtime"
+                send colored "{@prefix} &b%arg% &chas no playtime"
 
 on inventory click:
     {inventory::%player's uuid%} is "playtime.leaderboard"
     cancel event
     if event-slot is barrier:
         close player's inventory
+
+on inventory close:
+    delete {inventory::%player's uuid%}
