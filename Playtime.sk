@@ -7,6 +7,10 @@ options:
     leaderboard.cooldown: 5 minutes #Time it takes for the leaderboard to update
 #--------------------------------------------------------
 
+on load:
+    wait 1 tick
+    PlaytimeTop()
+
 every 5 seconds:
     loop all players:
         add 5 to {playtime::%uuid of loop-player%}
