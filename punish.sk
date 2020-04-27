@@ -1,4 +1,5 @@
 #Made by xlr100#6932 (For any bugs)
+#version: 1
 #--------------------------------------------------------
 #Configuration
 variables:
@@ -388,3 +389,4 @@ on connect:
                 kick player due to "&cYou are banned! You can rejoin in %difference between {_wait} and {_need}%%nl%&7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
         else:
             kick player due to "&cYou are perm banned!%nl%&7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
+
