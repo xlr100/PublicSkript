@@ -18,8 +18,6 @@ command /vanish:
             set {vanish::%uuid of player%} to true
             Vanish(player)
             send "&aYou are now vanished!"
-            
-            
         else:
             delete {vanish::%uuid of player%}
             send "&aYou are no longer vanished"
