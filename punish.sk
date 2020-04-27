@@ -12,6 +12,7 @@ options:
     usage.ban: "%{prefix}% &cCorrect Usage: &7/ban <player> <time> <reason>"
     usage.unban: "%{prefix}% &cCorrect Usage: &7/unban <player> <reason>"
     format.time: "&cThe time needs to be in the following format: <amount><sec/min/hour/day> (For example 10min)"
+    usage.logs: "%{prefix}% &cCorrect Usage: &7/logs <player> &cor &7&7/logs server"
     command.cooldown: 5 seconds #Change the cooldown for the command
 
 #--------------------------------------------------------
@@ -105,10 +106,14 @@ command /logs [<offline player>] [<text>] [<number>]:
                             if arg-2 is "warns" or "kicks":
                                 set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%" and "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%"               
                             else:
-                                if {%arg-2%::%{_id}%::undo.staff} is set:
-                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%", "&7Length: %{_color}%%{%arg-2%::%{_id}%::time} parsed as timespan%", "&7Canceled By: %{_color}%%{%arg-2%::%{_id}%::undo.staff}%" and "&7Reason For Cancel: %{_color}%%{%arg-2%::%{_id}%::undo.reason}%"
+                                if {%arg-2%::%{_id}%::time} isn't "perm":
+                                    set {_time} to {%arg-2%::%{_id}%::time} parsed as timespan
                                 else:
-                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%" and "&7Length: %{_color}%%{%arg-2%::%{_id}%::time} parsed as timespan%" 
+                                    set {_time} to {%arg-2%::%{_id}%::time}
+                                if {%arg-2%::%{_id}%::undo.staff} is set:
+                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%", "&7Length: %{_color}%%{_time}%", "&7Canceled By: %{_color}%%{%arg-2%::%{_id}%::undo.staff}%" and "&7Reason For Cancel: %{_color}%%{%arg-2%::%{_id}%::undo.reason}%"
+                                else:
+                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%" and "&7Length: %{_color}%%{_time}%" 
                             add 1 to {_slot}
                             if {_slot} >= 45:
                                 set slot 54 of {_menu} to arrow named "&eNext Page"
@@ -131,10 +136,14 @@ command /logs [<offline player>] [<text>] [<number>]:
                             if arg-2 is "warns" or "kicks":
                                 set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Player: %{_color}%%{%arg-2%::%{_id}%::player}%", "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%" and "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%"               
                             else:
-                                if {%arg-2%::%{_id}%::undo.staff} is set:
-                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Player: %{_color}%%{%arg-2%::%{_id}%::player}%", "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%", "&7Length: %{_color}%%{%arg-2%::%{_id}%::time} parsed as timespan%", "&7Canceled By: %{_color}%%{%arg-2%::%{_id}%::undo.staff}%" and "&7Reason For Cancel: %{_color}%%{%arg-2%::%{_id}%::undo.reason}%"
+                                if {%arg-2%::%{_id}%::time} isn't "perm":
+                                    set {_time} to {%arg-2%::%{_id}%::time} parsed as timespan
                                 else:
-                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Player: %{_color}%%{%arg-2%::%{_id}%::player}%", "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%" and "&7Length: %{_color}%%{%arg-2%::%{_id}%::time} parsed as timespan%" 
+                                    set {_time} to {%arg-2%::%{_id}%::time}
+                                if {%arg-2%::%{_id}%::undo.staff} is set:
+                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Player: %{_color}%%{%arg-2%::%{_id}%::player}%", "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%", "&7Length: %{_color}%%{_time}%", "&7Canceled By: %{_color}%%{%arg-2%::%{_id}%::undo.staff}%" and "&7Reason For Cancel: %{_color}%%{%arg-2%::%{_id}%::undo.reason}%"
+                                else:
+                                    set slot {_slot} of {_menu} to paper named "%{_color}%%{punish.show::%arg-2%}% ##%{_id}%" with lore "&7Player: %{_color}%%{%arg-2%::%{_id}%::player}%", "&7Staff: %{_color}%%{%arg-2%::%{_id}%::staff}%", "&7Reason: %{_color}%%{%arg-2%::%{_id}%::reason}%", "&7Date: %{_color}%%{%arg-2%::%{_id}%::when}%" and "&7Length: %{_color}%%{_time}%" 
                             add 1 to {_slot}
                             if {_slot} >= 45:
                                 set slot 53 of {_menu} to arrow named "&eNext Page"
@@ -145,6 +154,8 @@ command /logs [<offline player>] [<text>] [<number>]:
                     set {inventory::%player's uuid%} to "logs.%arg-2%/%arg-1%/%{_last}%"
                 else:
                     set {inventory::%player's uuid%} to "logs.%arg-2%/%arg-1%"
+        else:
+            send {@usage.logs}
 
                 
 on inventory click:
@@ -256,11 +267,23 @@ command /unmute [<offline player>] [<text>]:
         if arg-1 and arg-2 is set:
             if {mute::%arg-1's uuid%} is set:
                 set {_id} to {mute::%arg-1's uuid%}
-                set {mutes::%{_id}%::undo.staff} to player
-                set {mutes::%{_id}%::undo.reason} to arg-2
-                set {mutes::%{_id}%::undo.when} to now
-                delete {mute::%arg-1's uuid%}
-                broadcast "%{prefix}% &e%arg-1% &7has been unmuted by &e%player% &7for &c%arg-2%"
+                if {mutes::%{_id}%::time} isn't "perm":
+                    set {_wait} to difference between {mutes::%{_id}%::when} and now
+                    if {_wait} < {mutes::%{_id}%::time} parsed as timespan:
+                        set {_c} to true
+                    else:
+                        delete {mute::%arg-1's uuid%}
+                else:
+                    set {_c} to true
+                if {_c} is true:
+                    set {_id} to {mute::%arg-1's uuid%}
+                    set {mutes::%{_id}%::undo.staff} to player
+                    set {mutes::%{_id}%::undo.reason} to arg-2
+                    set {mutes::%{_id}%::undo.when} to now
+                    delete {mute::%arg-1's uuid%}
+                    broadcast "%{prefix}% &e%arg-1% &7has been unmuted by &e%player% &7for &c%arg-2%"
+                else:
+                    send "%{prefix}% &cThis player isn't muted"
             else:
                 send "%{prefix}% &cThis player isn't muted"
         else:
@@ -328,12 +351,24 @@ command /unban [<offline player>] [<text>]:
         if arg-1 is set:
             if arg-2 is set:
                 if {ban::%arg-1's uuid%} is set:
-                    set {_id} to {ban::%arg-1's uuid%}
-                    set {bans::%{_id}%::undo.staff} to player
-                    set {bans::%{_id}%::undo.reason} to arg-2
-                    set {bans::%{_id}%::undo.when} to now
-                    delete {ban::%arg-1's uuid%}
-                    broadcast "%{prefix}% &e%arg-1% &7has been unbanned by &e%player% &7for &c%arg-2%"
+                    set {_id} to {mute::%arg-1's uuid%}
+                    if {mutes::%{_id}%::time} isn't "perm":
+                        set {_wait} to difference between {mutes::%{_id}%::when} and now
+                        if {_wait} < {mutes::%{_id}%::time} parsed as timespan:
+                            set {_c} to true
+                        else:
+                            delete {ban::%arg-1's uuid%}
+                    else:
+                        set {_c} to true
+                    if {_c} is true:
+                        set {_id} to {ban::%arg-1's uuid%}
+                        set {bans::%{_id}%::undo.staff} to player
+                        set {bans::%{_id}%::undo.reason} to arg-2
+                        set {bans::%{_id}%::undo.when} to now
+                        delete {ban::%arg-1's uuid%}
+                        broadcast "%{prefix}% &e%arg-1% &7has been unbanned by &e%player% &7for &c%arg-2%"
+                    else:
+                        send "%{prefix}% &cThis player isn't banned"
                 else:
                     send "%{prefix}% &cThis player isn't banned"
             else:
