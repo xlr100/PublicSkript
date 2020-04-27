@@ -1,0 +1,34 @@
+#Made by xlr100#6932 (For any bugs)
+#version: 1
+function Vanish(p: player):
+    set {_u} to uuid of {_p}
+    while {_p} is online:
+        if {vanish::%{_u}%} is true:
+            hide {_p} from all players where [input doesn't have permission "skript.vanish"]
+            send action bar "&c&lYou are vanished!" to {_p}
+            wait 1 second
+        else:
+            exit loop
+        
+command /vanish:
+    permission: skript.vanish
+    aliases: /v
+    trigger:
+        if {vanish::%uuid of player%} isn't true:
+            set {vanish::%uuid of player%} to true
+            Vanish(player)
+            send "&aYou are now vanished!"
+            
+            
+        else:
+            delete {vanish::%uuid of player%}
+            send "&aYou are no longer vanished"
+            reveal player to all players
+        
+on damage:
+    {vanish::%uuid of attacker%} is true
+    cancel event
+
+on join:
+    {vanish::%uuid of player%} is true
+    Vanish(player)
