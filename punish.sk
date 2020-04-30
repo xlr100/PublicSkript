@@ -333,9 +333,9 @@ command /ban [<offline player>] [<text>] [<text>]:
                         add {ban.count} to {punish::%arg-1's uuid%::bans::*}
                         set {ban::%arg-1's uuid%} to {ban.count}
                         if {_length} isn't "perm":
-                            kick arg-1 due to "&cYou are banned! You can rejoin in %{_length} parsed as timespan%%nl%&7Staff: &b%{bans::%{ban.count}%::staff}% &7Reason: &b%{bans::%{ban.count}%::reason}%"
+                            kick arg-1 due to "&cYou are banned! You can rejoin in %{_length} parsed as timespan% &7Staff: &b%{bans::%{ban.count}%::staff}% &7Reason: &b%{bans::%{ban.count}%::reason}%"
                         else:
-                            kick arg-1 due to "&cYou are perm banned!%nl%&7Staff: &b%{bans::%{ban.count}%::staff}% &7Reason: &b%{bans::%{ban.count}%::reason}%"
+                            kick arg-1 due to "&cYou are perm banned! &7Staff: &b%{bans::%{ban.count}%::staff}% &7Reason: &b%{bans::%{ban.count}%::reason}%"
                         broadcast "%{prefix}% &e%arg-1% &7has been banned by &e%player% &7for &c%arg-3% &7(ID: %{ban.count}%)"
                     else:
                         send {@format.time}
@@ -386,7 +386,7 @@ on connect:
             if {_wait} >= {_need}:
                 delete {ban::%player's uuid%}
             else:
-                kick player due to "&cYou are banned! You can rejoin in %difference between {_wait} and {_need}%%nl%&7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
+                kick player due to "&cYou are banned! You can rejoin in %difference between {_wait} and {_need}% &7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
         else:
-            kick player due to "&cYou are perm banned!%nl%&7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
+            kick player due to "&cYou are perm banned! &7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
 
