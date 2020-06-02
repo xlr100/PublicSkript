@@ -1,0 +1,132 @@
+options:
+	prefix: &b&lSkills »
+	
+on load:
+	#Ore Xp
+	delete {mining::xp::*}
+	set {mining::xp::coal} to 1
+	set {mining::xp::redstone} to 2
+	set {mining::xp::iron} to 3
+	set {mining::xp::lapis_lazuli} to 4
+	set {mining::xp::gold} to 5
+	set {mining::xp::diamond} to 6
+	set {mining::xp::nether_quartz} to 5
+	set {mining::xp::emerald} to 7
+
+on join:
+	if {skills::mining::level::%uuid of player%} isn't set:
+		set {skills::mining::xp::%uuid of player%} to 0
+		set {skills::mining::level::%uuid of player%} to 1
+
+on mine of ore:
+	set {_name} to "%event-block%"
+	replace all " ore" and "lit " in {_name} with ""
+	replace all " " in {_name} with "_"
+	if tool of the player isn't enchanted with silk touch:
+		add {mining::xp::%{_name}%} to {skills::mining::xp::%uuid of player%}
+		send action bar "&b+%{mining::xp::%{_name}%}% Mining" to player
+		xpUpdateMining(player)
+	else:
+		send action bar "&cNo xp gain with silk touch!" to player
+
+command /skills:
+	trigger:
+		set {_menu} to chest inventory with 3 rows named "Skills"
+		loop integers from 0 to 26:
+			set slot loop-value of {_menu} to black glass pane named " "
+		if {skills::mining::level::%{_u}%} is 1:
+			set {_need} to 25
+		else:
+			set {_need} to {skills::mining::last.xp::%uuid of player%} + 0.5 * {skills::mining::last.xp::%uuid of player%}
+			remove {skills::mining::xp::%uuid of player%} from {_need}
+			set {_need} to rounded {_need}
+		set slot 13 of {_menu} to diamond pickaxe named "&b&lMining" lored "&7Level: &e%{skills::mining::level::%uuid of player%}%||&7Exp: &a%rounded {skills::mining::xp::%uuid of player%}%||&7Exp to next level: &6%{_need}%" with all flags hidden
+		set slot 18 of {_menu} to barrier named "&cClose"
+		set {_xlr100} to "xlr100" parsed as offline player
+		set slot 26 of {_menu} to {_xlr100}'s skull named "&aCredits: xlr100" lored "&7xlr100##6932"
+		open {_menu} to player
+		set {inventory::%uuid of player%} to "skills.main"
+
+on inventory close:
+	{inventory::%uuid of player%} is set
+	delete {inventory::%uuid of player%}
+
+on inventory click:
+	if {inventory::%uuid of player%} contains "skills":
+		cancel event
+		if name of event-slot is "&cClose":
+			close player's inventory
+
+
+command /skillreset:
+	permission: skript.skillreset
+	trigger:
+		delete {skills::mining::xp::*}
+		delete {skills::mining::level::*}
+		delete {skills::mining::last.xp::*}
+		send "{@prefix} &aAll skills related variables are reset"
+		
+
+function xpUpdateMining(p: player):
+	set {_u} to uuid of {_p}
+	if {skills::mining::level::%{_u}%} is 1:
+		set {_need} to 25
+	else:
+		set {_need} to {skills::mining::last.xp::%{_u}%} + 0.5 * {skills::mining::last.xp::%{_u}%}
+	set {skills::mining::%{_u}%::progress} to ({skills::mining::xp::%{_u}%} / {_need}) * 100
+	if {skills::mining::%{_u}%::progress} >= 100:
+		add 1 to {skills::mining::level::%{_u}%}
+		remove {_need} from {skills::mining::xp::%{_u}%}
+		set {skills::mining::last.xp::%{_u}%} to {_need}
+		send {_p} title "&b&lMining Level Up!" with subtitle "&3/skills for more information" for 2 seconds with 1 second fade in and 1 second fade out
+		xpUpdateMining({_p})
+
+command /leaderboard [<text>]:
+	trigger:
+		if arg is "mining":
+			SkillLeaderboard(player, "Mining")
+ 
+function SkillLeaderboard(p: player, skill: text):
+	set {_menu} to chest inventory with 5 rows named "%{_skill}% Leaderboard"
+	loop integers from 0 to 8:
+		set slot loop-value of {_menu} to black glass pane named " "
+	loop integers from 36 to 44:
+		set slot loop-value of {_menu} to black glass pane named " "
+	set slot 9, 17, 18, 26 and 27 and 35 of {_menu} to black glass pane named " "
+	set slot 36 of {_menu} to arrow named "&cBack"
+	loop {skills::%{_skill}%::level::*}:
+		add 1 to {_size}
+		if {_low.to.high.list::%loop-value%} is not set:
+			set {_low.to.high.list::%loop-value%} to loop-index
+		else:
+			set {_n} to 0
+			loop {_size} times:
+				set {_n} to {_n}+1
+				{_low.to.high.list::%loop-value-1%.%{_n}%} is not set
+				set {_low.to.high.list::%loop-value-1%.%{_n}%} to loop-index
+				stop loop
+	wait 1 tick
+	set {_n} to size of {_low.to.high.list::*}
+	loop {_low.to.high.list::*}:
+		set {_high.to.low.list::%{_n}%} to loop-value
+		set {_n} to {_n}-1
+	set {_topnumber} to 1
+	loop {_high.to.low.list::*}:
+		set {_player} to "%loop-value%" parsed as offline player
+		if "%{_player}%" != "null":
+			if {_topnumber} is 1:
+				set {_slot} to 13
+			else if {_topnumber} is 2:
+				set {_slot} to 21
+			else if {_topnumber} is 3:
+				set {_slot} to 23
+			else if {_topnumber} < 11:
+				set {_slot} to {_topnumber} + 24
+			set {_uuid} to uuid of {_player}
+			set slot {_slot} of {_menu} to {_player}'s skull named "&7%{_topnumber}%. &e%{_player}%" lored "&7%{_skill}% Level &8» &b%{skills::%{_skill}%::level::%{_uuid}%}%"
+			add 1 to {_topnumber}
+			if {_topnumber} > 10:
+				exit loop
+	set {_u} to uuid of {_p}
+	open {_menu} to {_p}
+	set {inventory::%{_u}%} to "skills.%{_skill}%.leaderboard"
