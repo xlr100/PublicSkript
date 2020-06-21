@@ -34,7 +34,7 @@ on pickup:
         # broadcast "Item: %{_item}%, Amount: %{_amount}%"
         if event-item is {_item}:
             add item amount of event-item to {player::%uuid of player%::quest::amount}
-            broadcast "(%{player::%uuid of player%::quest::amount}% / %{_amount}%) * 100"
+            # broadcast "(%{player::%uuid of player%::quest::amount}% / %{_amount}%) * 100"
             if {player::%uuid of player%::quest::amount} >= {_amount}:
                 set {player::%uuid of player%::quest::progress} to 100
                 send player title "&dQuest %{_id}% Completed!" with subtitle "&fCollect the rewards in /quests" for 2 seconds with 1 second fade in and 1 second fade out
