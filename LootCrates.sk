@@ -1,0 +1,80 @@
+options:
+    storage: crates
+    prefix: &b&lLoot Crates »
+    particle type: "cloud"
+    particle amount: 50
+    time: 1 minute
+    max: 10
+
+on load:
+    set {{@storage}::ItemList::*} to stone sword, 16 cobblestone, 10 dirt and iron hoe
+
+command /lootcrate [<text>] [<text>]:
+    trigger:
+        if arg-1 is "list":
+            if {{@storage}::current::*} is set:
+                set {_menu} to chest inventory with 3 rows named "Loot Crates"
+                set {_slot} to 0
+                loop {{@storage}::current::*}:
+                    set slot {_slot} of {_menu} to paper named "&b&lLoot Crate" lored "&7Location: %loop-value%"
+                    add 1 to {_slot}
+                set slot 26 of {_menu} to barrier named "&cClose"
+                open {_menu} to player
+                set {player::%uuid of player%::inventory} to "{@storage}"
+            else:
+                send "{@prefix} &cThere are no spawned loot crates"
+        else if player has permission "{@storage}":
+            if arg-1 is "spawn":
+                if arg-2 is set:
+                    set {_loc} to {{@storage}::location::%arg-2%}
+                    if {_loc} isn't set:
+                        send "{@prefix} &cThe location number %arg-2% isn't set"
+                        stop
+                else:
+                    set {_loc} to a random element out of {{@storage}::location::*}
+                    while block at {_loc} is a barrel:
+                        wait 1 tick
+                        set {_loc} to a random element out of {{@storage}::location::*}
+                set block above {_loc} to barrel
+                loop 4 times:
+                    add random element out of {{@storage}::ItemList::*} to {_items::*}
+                loop {_items::*}:
+                    set {_i} to a random integer from 0 to 26
+                    set slot {_i} of inventory of block above {_loc} to loop-value 
+                broadcast "{@prefix} &dNew crate spawned in &f%{_loc}%"
+                add {_loc} to {{@storage}::current::*}
+            else if arg-1 is "set":
+                give player stick named "&dCrates Creator" lored "&cRightclick on a block to set a crate spawn location above it"
+
+every {@time}:
+    set {_a} to size of {{@storage}::current::*} ? 0
+    {_a} < size of {{@storage}::location::*}
+    {_a} < {@max}
+    make console execute command "/spawn"
+
+on rightclick with stick:
+    name of player's tool is "&dCrates Creator"
+    player has permission "{@storage}"
+    event-block is set
+    cancel event
+    add 1 to {{@storage}.count}
+    set {{@storage}::location::%{{@storage}.count}%} to location of event-block
+    send "{@prefix} &aLocation number %{{@storage}.count}% is set to %location of event-block%"
+
+on rightclick on barrel:
+    {{@storage}::location::*} contains location of block below event-block
+    set {player::%uuid of player%::barrel} to location of event-block
+
+on inventory close:
+    delete {player::%uuid of player%::inventory}
+    if inventory type of event-inventory is "BARREL":
+        set block at {player::%uuid of player%::barrel} to air
+        spawn {@particle amount} of {@particle type}:0.1 offset by 1, 1, 1 at {player::%uuid of player%::barrel}
+        remove {player::%uuid of player%::barrel} from {{@storage}::current::*}
+        delete {player::%uuid of player%::barrel}
+
+on inventory click:
+    {player::%uuid of player%::inventory} is "{@storage}"
+    cancel event
+    if event-slot is barrier:
+        close player's inventory
