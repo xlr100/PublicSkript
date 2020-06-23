@@ -1,0 +1,148 @@
+options:
+    #If you change any of these 4 all related data will be deleted
+    storage: turret
+    setup: turrets
+    placed: placed
+    nbt: turret
+    #Configuratable
+    prefix: &b&lTurrets »
+    time: 1 second #The time it takes for towers to detect players, the shorter this is the more lag
+    not owner: false #Set to false if you want towers to shoot at their owners
+    
+on load:
+    Turret_Reload()
+    Turret_Register("Snowball Turret", smooth quartz named "&fSnowball &cTurret" with lore "&cShoots snowballs", snowball, (obsidian, smooth quartz and oak fence), 0.5, 10, 0.5, 0.5 seconds)
+    Turret_Register("Arrow Turret", nether brick named "&fArrow &cTurret" with lore "&cShoots arrows", arrow, (obsidian, nether brick and nether brick fence), 3, 15, 1, 1.5 seconds)
+
+function Turret_Register(name: string, item: item, projectile: item, blocks: items, dmg: number, range: number, speed: number, cd: timespan):
+    #Speed: The projectile speed, CD: the recharge time
+    set {_id} to {_name} in lower case
+    replace all " " in {_id} with "_"
+    set {{@storage}::{@setup}::%{_id}%::name} to {_name}
+    set {{@storage}::{@setup}::%{_id}%::item} to {_item}
+    set {{@storage}::{@setup}::%{_id}%::projectile} to {_projectile}
+    set {{@storage}::{@setup}::%{_id}%::blocks::*} to {_blocks::*}
+    set {{@storage}::{@setup}::%{_id}%::damage} to {_dmg}
+    set {{@storage}::{@setup}::%{_id}%::range} to {_range}
+    set {{@storage}::{@setup}::%{_id}%::speed} to {_speed}
+    set {{@storage}::{@setup}::%{_id}%::cd} to {_cd}
+
+function Turret_Reload():
+    clear {{@storage}::{@setup}::*}
+
+function Turret_Delete(count: integer):
+    set {_loc} to {{@storage}::{@placed}::%{_count}%::location}
+    set block at {_loc} to air
+    set block below {_loc} to air
+    set block below below {_loc} to air
+    delete {{@storage}::{@placed}::%{_count}%::location}
+    delete {{@storage}::{@placed}::%{_count}%::owner}
+    delete {{@storage}::{@placed}::%{_count}%::id}
+    delete {{@storage}::{@placed}::%{_count}%}
+    
+
+command /turret [<text>] [<text>] [<offline player>]:
+    trigger:
+        if arg-1 is "get":
+            set {_id} to arg-2
+            if {{@storage}::{@setup}::%{_id}%::item} is set:
+                set {_item} to {{@storage}::{@setup}::%{_id}%::item}
+                add "{{@nbt}:%{_id}%}" to {_item}'s nbt
+                give player {_item}
+        else if arg-1 is "list":
+            send "{@prefix} &7Towers: &e%all indices of {{@storage}::{@setup}::*}%"
+        else if arg-1 is "placed":
+            send "{@prefix} &7Placed Towers: &e%all indices of {{@storage}::{@placed}::*}%"
+        else if arg-1 is "clearall":
+            loop all indices of {{@storage}::{@placed}::*}:
+                Turret_Delete(loop-value parsed as integer)
+            delete {{@storage}::count}
+            clear {{@storage}::{@placed}::*}
+
+on rightclick on fence:
+    {{@storage}::location::%location of event-block%} is set
+    cancel event
+    set {_count} to {{@storage}::location::%location of event-block%}
+    if {{@storage}::{@placed}::%{_count}%::owner} is player:
+        set {_id} to {{@storage}::{@placed}::%{_count}%::id}
+        set {_item} to {{@storage}::{@setup}::%{_id}%::item}
+        add "{{@nbt}:%{_id}%}" to {_item}'s nbt
+        give player {_item}
+        Turret_Delete({_count})
+        # broadcast "%{{@storage}::location::%location of event-block%}%"
+
+
+on break:
+    if {{@storage}::location::%location of event-block%} or {{@storage}::location::%location of block above event-block%} or {{@storage}::location::%location of block above block above event-block%} is set:
+        cancel event
+        send "{@prefix} &cTo break a turret rightclick the fence (You need to be the owner)"
+
+on place:
+    set {_id} to tag "{@nbt}" of player's tool's nbt
+    # broadcast "%{_id}%"
+    if {{@storage}::{@setup}::%{_id}%::name} is set:
+        # loop {{@storage}::{@setup}::%{_id}%::blocks::*}:
+        #     if {_b} isn't set:
+        #         set {_b} to event-block
+        #     else:
+        #         set {_b} to block above {_b}
+        #     set {_b} to loop-value
+        #     broadcast "set %{_b}% to %loop-value%"
+        set event-block to {{@storage}::{@setup}::%{_id}%::blocks::1}
+        set block above event-block to {{@storage}::{@setup}::%{_id}%::blocks::2}
+        set block above block above event-block to {{@storage}::{@setup}::%{_id}%::blocks::3}
+        add 1 to {{@storage}::count}
+        set {_count} to {{@storage}::count}
+        set {{@storage}::{@placed}::%{_count}%::location} to location of block above block above event-block
+        set {{@storage}::{@placed}::%{_count}%::owner} to player
+        set {{@storage}::{@placed}::%{_count}%::id} to {_id}
+        set {{@storage}::location::%location of block above block above event-block%} to {_count}
+        send "{@prefix} &7%{{@storage}::{@setup}::%{_id}%::name}% turret is now setup"
+
+every {@time}:
+    # broadcast "%all indices of {{@storage}::{@placed}::*}%"
+    loop all indices of {{@storage}::{@placed}::*}:
+        set {_count} to loop-value
+        set {_id} to {{@storage}::{@placed}::%{_count}%::id}
+        set {_r} to {{@storage}::{@placed}::%{_count}%::range} ? {{@storage}::{@setup}::%{_id}%::range}
+        set {_loc} to {{@storage}::{@placed}::%{_count}%::location}
+        # broadcast "Turret: %{_count}% ID: %{_id}% Loc: %{_loc}%"
+        loop all players in radius {_r} of {_loc}:
+            # broadcast "!"
+            if {@not owner} is true:
+                {{@storage}::{@placed}::%{_count}%::owner} is player
+                continue
+            {{@storage}::{@placed}::%{_count}%::inRange::*} doesn't contain loop-player
+            set {_proj} to snowball
+            set {_speed} to {{@storage}::{@placed}::%{_count}%::speed} ? {{@storage}::{@setup}::%{_id}%::speed}
+            set {_wait} to {{@storage}::{@placed}::%{_count}%::cd} ? {{@storage}::{@setup}::%{_id}%::cd}
+            set {_d} to distance between loop-player and {_loc}
+            set {_speed} to {{@storage}::{@setup}::%{_id}%::speed}
+            add loop-player to {{@storage}::{@placed}::%{_count}%::inRange::*}
+            set {player::%uuid of loop-player%::isAttacked} to {_count}
+            # broadcast "%loop-player%"
+            while {_d} <= {_r}:
+                # broadcast "!"
+                wait {_wait}
+                set {_v} to vector from location of block above {_loc} to location of loop-player
+                set vector length of {_v} to {_speed}
+                send action bar "Player: %loop-player% Distance: %distance between loop-player and {_loc}% ID: %{_id}%" to loop-player
+                if {{@storage}::{@setup}::%{_id}%::projectile} is snowball:
+                    shoot snowball from block above {_loc} {_v}
+                    set metadata value "{@storage}" of last shot snowball to {_count}
+                else if {{@storage}::{@setup}::%{_id}%::projectile} is arrow:
+                    shoot arrow from block above {_loc} {_v}
+                    set metadata value "{@storage}" of last shot arrow to {_count}
+                set {_d} to distance between loop-player and {_loc}
+            remove loop-player from {{@storage}::{@placed}::%{_count}%::inRange::*}
+            delete {player::%uuid of loop-player%::isAttacked}
+                
+
+on damage of player:
+    projectile is snowball or arrow
+    set {_count} to metadata value "{@storage}" of event-projectile
+    if {_count} is set:
+        set {_id} to {{@storage}::{@placed}::%{_count}%::id}
+        set {_dmg} to {{@storage}::{@placed}::%{_count}%::damage} ? {{@storage}::{@setup}::%{_id}%::damage}
+        set damage to {_dmg}
+
