@@ -6,7 +6,7 @@ options:
     
 on load:
     Quest_Reload()
-    Quest_Register(1, "Lumberjack ", "break", "Collect 10.oak logs", 16 oak planks named "&bProtection Block")
+    Quest_Register(1, "Lumberjack ", "break", "Collect 10.wood", 16 oak planks named "&bProtection Block")
     Quest_Register(2, "Butcher", "kill", "Kill 16.pigs", stone sword)
     Quest_Register(3, "Assassin", "kill", "Kill 1.player", (2 glowstone dust, 2 spider eyes and 10 cobblestone))
     Quest_Register(4, "Novice Miner", "break", "Collect 32.cobblestone", (8 cobblestone, 3 gunpowder and 12 coal))
@@ -29,17 +29,22 @@ on break:
         replace all "Collect " in {_obj} with ""
         set {_temp::*} to {_obj} split at "."
         set {_amount} to {_temp::1} parsed as integer
-        set {_item} to {_temp::2} parsed as item type
+        if {_temp::2} isn't "wood":
+            set {_item} to {_temp::2} parsed as item type
+            if event-block isn't {_item}:
+                stop
+        else if "%event-block%" doesn't contain "wood":
+            stop
         # broadcast {_obj}
         # broadcast "Item: %{_item}%, Amount: %{_amount}%"
-        if event-block is {_item}:
-            add 1 to {player::%uuid of player%::quest::amount}
-            # broadcast "(%{player::%uuid of player%::quest::amount}% / %{_amount}%) * 100"
-            if {player::%uuid of player%::quest::amount} >= {_amount}:
-                set {player::%uuid of player%::quest::progress} to 100
-                send player title "&dQuest %{_id}% Completed!" with subtitle "&fCollect the rewards in /quests" for 2 seconds with 1 second fade in and 1 second fade out
-            else:
-                set {player::%uuid of player%::quest::progress} to ({player::%uuid of player%::quest::amount} / {_amount}) * 100
+        # if "%event-block%" parsed as item type) is {_item}:
+        add 1 to {player::%uuid of player%::quest::amount}
+        # broadcast "(%{player::%uuid of player%::quest::amount}% / %{_amount}%) * 100"
+        if {player::%uuid of player%::quest::amount} >= {_amount}:
+            set {player::%uuid of player%::quest::progress} to 100
+            send player title "&dQuest %{_id}% Completed!" with subtitle "&fCollect the rewards in /quests" for 2 seconds with 1 second fade in and 1 second fade out
+        else:
+            set {player::%uuid of player%::quest::progress} to ({player::%uuid of player%::quest::amount} / {_amount}) * 100
 
 on death:
     attacker is a player
@@ -155,6 +160,9 @@ on inventory click:
 
 on inventory close:
     delete {player::%uuid of player%::inventory}
+
+
+
 
 
 # on join:
