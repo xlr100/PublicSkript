@@ -6,11 +6,11 @@ options:
     
 on load:
     Quest_Reload()
-    Quest_Register(1, "Lumberjack ", "pickup", "Collect 10.oak logs", 16 oak planks named "&bProtection Block")
-    Quest_Register(2, "Butcher", "pickup", "Collect 16.raw porkchop", stone sword)
+    Quest_Register(1, "Lumberjack ", "break", "Collect 10.oak logs", 16 oak planks named "&bProtection Block")
+    Quest_Register(2, "Butcher", "kill", "Kill 16.pigs", stone sword)
     Quest_Register(3, "Assassin", "kill", "Kill 1.player", (2 glowstone dust, 2 spider eyes and 10 cobblestone))
-    Quest_Register(4, "Novice Miner", "pickup", "Collect 32.cobblestone", (8 cobblestone, 3 gunpowder and 12 coal))
-    Quest_Register(5, "Butcher ##2", "pickup", "Collect 32.raw porkchop", (1 iron sword, 4 gunpowder, 16 stone and 2 emeralds))
+    Quest_Register(4, "Novice Miner", "break", "Collect 32.cobblestone", (8 cobblestone, 3 gunpowder and 12 coal))
+    Quest_Register(5, "Butcher ##2", "kill", "Kill 32.pigs", (1 iron sword, 4 gunpowder, 16 stone and 2 emeralds))
 
 function Quest_Reload():
     clear {{@storage}::*}
@@ -21,10 +21,10 @@ function Quest_Register(id: integer, name: string, type: text, objective: text, 
     set {{@storage}::%{_id}%::objective} to {_objective}
     set {{@storage}::%{_id}%::rewards::*} to {_rewards::*}
 
-on pickup:
+on break:
     set {_id} to {player::%uuid of player%::quest::id} ? 1
     {player::%uuid of player%::quest::progress} ? 0 < 100
-    if {{@storage}::%{_id}%::type} is "pickup":
+    if {{@storage}::%{_id}%::type} is "break":
         set {_obj} to {{@storage}::%{_id}%::objective}
         replace all "Collect " in {_obj} with ""
         set {_temp::*} to {_obj} split at "."
@@ -32,8 +32,8 @@ on pickup:
         set {_item} to {_temp::2} parsed as item type
         # broadcast {_obj}
         # broadcast "Item: %{_item}%, Amount: %{_amount}%"
-        if event-item is {_item}:
-            add item amount of event-item to {player::%uuid of player%::quest::amount}
+        if event-block is {_item}:
+            add 1 to {player::%uuid of player%::quest::amount}
             # broadcast "(%{player::%uuid of player%::quest::amount}% / %{_amount}%) * 100"
             if {player::%uuid of player%::quest::amount} >= {_amount}:
                 set {player::%uuid of player%::quest::progress} to 100
@@ -105,8 +105,12 @@ command /quests [<text = "open">] [<offline player = %player%>]:
             loop all indices of {{@storage}::*}:
                 set {_id} to loop-value parsed as integer
                 if {player::%{_u}%::quest::id} ? 1 is {_id}:
-                    set {_item} to glowing orange dye
-                    set {_addition} to "&eQuest in Progress"
+                    if {player::%{_u}%::quest::progress} is 100:
+                        set {_item} to glowing orange dye
+                        set {_addition} to "&bClick to Claim Rewards"
+                    else:
+                        set {_item} to orange dye
+                        set {_addition} to "&eQuest in Progress"
                     set {_color} to "&6&l"
                     set {_progress} to "||&7Progress: &b%{player::%{_u}%::quest::progress} ? 0%%%"
                 else if {player::%{_u}%::quest::id} ? 1 >= {_id}:
@@ -151,9 +155,6 @@ on inventory click:
 
 on inventory close:
     delete {player::%uuid of player%::inventory}
-
-
-
 
 
 # on join:
