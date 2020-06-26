@@ -1,0 +1,141 @@
+options:
+    storage: gens
+    prefix: &a&lGEN &8»
+    gen item: beacon
+    gen block: oak fence
+    sound: ENTITY_ARROW_HIT_PLAYER
+    name: &aGenerator
+    permission: gens.get
+    slot: 13
+
+on load:
+    Gen_Register(1, prismarine, 10, ("10.bone", "7.gunpowder" and "5.clay"), (10 bones, 6 gunpowder, 5 clay and 32 raw porkchop), 1000, 10)
+    Gen_Register(2, prismarine bricks, 20, ("10.bone", "7.gunpowder" and "5.clay"), (10 bones, 6 gunpowder, 5 clay and 32 raw porkchop), 1000, 9)
+
+function Gen_Register(level: integer, block: item, money: number, get: strings, upgrade.items: items, upgrade.price: integer, cooldown: integer):
+    set {{@storage}::info::%{_level}%::block} to {_block}
+    set {{@storage}::info::%{_level}%::money} to {_money}
+    set {{@storage}::info::%{_level}%::get::*} to {_get::*}
+    set {{@storage}::info::%{_level}%::upgrade.items::*} to {_upgrade.items::*}
+    set {{@storage}::info::%{_level}%::upgrade.price} to {_upgrade.price}
+    set {{@storage}::info::%{_level}%::cooldown} to {_cooldown}
+
+function String_numbersFromString(s: string) :: number:
+    # will return only the numbers from a string
+    # eg 1h651th -> 1651
+    set {_characters::*} to {_s} split at ""
+    loop {_characters::*}:
+        if index of loop-value in "0123456789" != -1:
+            add loop-value to {_numbers::*}
+    set {_str} to join {_numbers::*}
+    return {_str} parsed as number
+
+command /moneya <number>:
+    permission: *
+    trigger:
+        add arg to {player::%uuid of player%::money}
+        send "&eMoney: %{player::%uuid of player%::money}%"
+
+command /gen <number>:
+    permission: {@permission}
+    trigger:
+        set {_level} to arg-1
+        if {{@storage}::info::%{_level}%::block} is set:
+            send "{@prefix} &7You have been give a level %{_level}% &7generator"
+            give player {@gen item} named "{@name} &e[Lvl. %{_level}%]"
+        else:
+            send "{@prefix} &cThis gen doesn't exist"
+
+on place of {@gen item}:
+    name of player's tool contains "{@name}"
+    if block above event-block is air:
+        send title "&aRIGHT CLICK!" with subtitle "&fTo earn coins" for 3 seconds
+        play "{@sound}" to player at volume 20 and pitch 1
+        set {_level} to String_numbersFromString(uncolored name of player's tool)
+        remove 1 of player's tool from player's tool
+        set block above event-block to {{@storage}::info::%{_level}%::block}
+        set block at event-block's location to {@gen block}
+        set {{@storage}::placed::%location of event-block%::owner} to player
+        set {{@storage}::placed::%location of event-block%::level} to {_level}
+        send "{@prefix} &7Gen has been placed"
+    else:
+        cancel event
+        send "{@prefix} &7You can not place your gen here"
+
+on leftclick on {@gen block}:
+    {{@storage}::placed::%location of event-block%::level} is set
+    set event-block to air
+    set block above event-block to air
+    give player 1 {@gen item} named "{@name} &e[Lvl. %{{@storage}::placed::%location of event-block%::level}%]"
+    delete {{@storage}::placed::%location of event-block%::*}
+    delete {{@storage}::placed::%location of event-block%}
+    send "{@prefix} &7Generator has been removed successfully"
+
+on break:
+    {{@storage}::placed::%location of event-block%::level} or {{@storage}::placed::%location of block above event-block%::level} is set
+    cancel event
+    send "{@prefix} &cYou may not break this. Left click the fence to remove the generator"
+
+on rightclick:
+    event-block is set
+    {{@storage}::placed::%location of block below event-block%::level} is set
+    set {_loc} to location of block below event-block
+    if {{@storage}::placed::%{_loc}%::owner} is player:
+        set {_level} to {{@storage}::placed::%{_loc}%::level}
+        if player is sneaking:
+            set {_menu} to chest inventory with 3 rows named "Upgrade"
+            loop {{@storage}::info::%{_level}%::upgrade.items::*}:
+                if {_desc} isn't set:
+                    set {_desc} to "&e- %loop-value%"
+                else:
+                    set {_desc} to "%{_desc}%||&e- %loop-value%"
+            set slot {@slot} of {_menu} to {{@storage}::info::%{_level}%::block} named "&7Upgrade to {@name} &e[Lvl. %{_level} + 1%]" lored "&aRequires:||&e- %{{@storage}::info::%{_level}%::upgrade.price}% coins||%{_desc}%"
+            open {_menu} to player
+            set {player::%uuid of player%::inventory} to "gen_upgrade.1"
+            set {player::%uuid of player%::{@storage}::upgrading} to location of event-block
+        else:
+            if {player::%uuid of player%::{@storage}::cooldown} isn't set:
+                set {player::%uuid of player%::{@storage}::cooldown} to {{@storage}::info::%{_level}%::cooldown}
+                while {player::%uuid of player%::{@storage}::cooldown} > 0:
+                    send actionbar "&c&l%{player::%uuid of player%::{@storage}::cooldown}%" to player
+                    remove 1 from {player::%uuid of player%::{@storage}::cooldown}
+                    wait 1 second
+                delete {player::%uuid of player%::{@storage}::cooldown}
+                send actionbar "&a+$%{{@storage}::info::%{_level}%::money}%" to player
+                add {{@storage}::info::%{_level}%::money} to {player::%uuid of player%::money}
+                loop {{@storage}::info::%{_level}%::get::*}:
+                    set {_temp::*} to loop-value split at "."
+                    if (random integer from 0 to 100) <= ({_temp::1} parsed as integer):
+                        drop ({_temp::2} parsed as item) at block above event-block's location
+            else:
+                send "{@prefix} &cYou are already using a generator"
+    else:
+        send "{@prefix} &cThis is not your gen"
+
+on inventory click:
+    {player::%uuid of player%::inventory} contains "gen_upgrade"
+    cancel event
+    if index of event-slot is {@slot}:
+        set {_level} to last element of {player::%uuid of player%::inventory} split at "." parsed as integer
+        set {_level2} to {_level} + 1
+        if {player::%uuid of player%::money} >= {{@storage}::info::%{_level}%::upgrade.price}:
+            loop {{@storage}::info::%{_level}%::upgrade.items::*}:
+                if player doesn't have loop-value:
+                    send "{@prefix} &cYou do not have the required items"
+                    stop
+            remove {{@storage}::info::%{_level}%::upgrade.items::*} from player's inventory
+            remove {{@storage}::info::%{_level}%::upgrade.price} from {player::%uuid of player%::money}
+            set {_loc} to {player::%uuid of player%::{@storage}::upgrading}
+            set block at {_loc} to {{@storage}::info::%{_level2}%::block}
+            set {_loc} to location of block below block at {_loc}
+            add 1 to {{@storage}::placed::%{_loc}%::level}
+            send "&7Successfully upgraded your generator to &eLevel %{_level2}%&7!"
+        else:
+            send "{@prefix} &cYou do not have enough coins"
+        close player's inventory
+
+
+
+on inventory close:
+    delete {player::%uuid of player%::inventory}
+    delete {player::%uuid of player%::{@storage}::upgrading}
