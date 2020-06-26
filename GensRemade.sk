@@ -30,6 +30,11 @@ function String_numbersFromString(s: string) :: number:
     set {_str} to join {_numbers::*}
     return {_str} parsed as number
 
+command /genfix:
+    cooldown: 1 minute
+    trigger:
+        delete {player::%uuid of player%::{@storage}::cooldown}
+
 command /moneya <number>:
     permission: *
     trigger:
@@ -64,15 +69,24 @@ on place of {@gen item}:
 
 on leftclick on {@gen block}:
     {{@storage}::placed::%location of event-block%::level} is set
-    set event-block to air
-    set block above event-block to air
-    give player 1 {@gen item} named "{@name} &e[Lvl. %{{@storage}::placed::%location of event-block%::level}%]"
-    delete {{@storage}::placed::%location of event-block%::*}
-    delete {{@storage}::placed::%location of event-block%}
-    send "{@prefix} &7Generator has been removed successfully"
+    if {player::%uuid of player%::{@storage}::cooldown} isn't set:
+        set {_level} to {{@storage}::placed::%location of event-block%::level}
+        set {player::%uuid of player%::{@storage}::cooldown} to {{@storage}::info::%{_level}%::cooldown}
+        while {player::%uuid of player%::{@storage}::cooldown} > 0:
+            send actionbar "&c&l%{player::%uuid of player%::{@storage}::cooldown}%" to player
+            remove 1 from {player::%uuid of player%::{@storage}::cooldown}
+            wait 1 second
+        delete {player::%uuid of player%::{@storage}::cooldown}
+        set event-block to air
+        set block above event-block to air
+        give player 1 {@gen item} named "{@name} &e[Lvl. %{_level}%]"
+        delete {{@storage}::placed::%location of event-block%::*}
+        delete {{@storage}::placed::%location of event-block%}
+        send "{@prefix} &7Generator has been removed successfully"
+        play "{@sound}" to player at volume 20 and pitch 1
 
 on break:
-    {{@storage}::placed::%location of event-block%::level} or {{@storage}::placed::%location of block above event-block%::level} is set
+    {{@storage}::placed::%location of event-block%::level} or {{@storage}::placed::%location of block below event-block%::level} is set
     cancel event
     send "{@prefix} &cYou may not break this. Left click the fence to remove the generator"
 
@@ -133,8 +147,6 @@ on inventory click:
         else:
             send "{@prefix} &cYou do not have enough coins"
         close player's inventory
-
-
 
 on inventory close:
     delete {player::%uuid of player%::inventory}
