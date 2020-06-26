@@ -1,0 +1,81 @@
+options:
+    storage: warps
+    permission: warps.admin
+    prefix: &b&lWarps »
+    item: end portal frame
+    name: &b&lWarp
+
+on load:
+    Rank_Reset()
+
+function Rank_Reset():
+    delete {ranks::*}
+    loop "cobble", "coal", "iron" and "gold":
+        add 1 to {_count}
+        set {ranks::%{_count}%} to loop-value
+
+function Rank_GetName(id: integer) :: string:
+    return {ranks::%{_id}%}
+
+command /rank [<text>] [<integer>] [<offline player = %player%>]:
+    permission: *
+    trigger:
+        if arg-1 is "set":
+            set {player::%uuid of arg-3%::rank} to arg-2
+            send "{@prefix} &7%arg-3%'s rank is now set to %Rank_GetName(arg-2)%"
+
+
+function Warps_Teleport(p: player, id: text):
+    set {_u} to uuid of {_p}
+    if {player::%{_u}%::rank} ? 1 >= {{@storage}::list::%{_id}%::required}:
+        teleport {_p} to {{@storage}::list::%{_id}%::location}
+        send "{@prefix} &7Teleported to &e%{{@storage}::list::%{_id}%::name}%" to {_p}
+    else:
+        send "{@prefix} &cYou need to be rank %Rank_GetName({{@storage}::list::%{_id}%::required})%" to {_p}
+
+function Warps_NameToID(name: text) :: string:
+    set {_id} to uncolored {_name} in lower case
+    replace all " " in {_id} with "_"
+    return {_id}
+
+command /warp [<text>] [<text>] [<integer>]:
+    trigger:
+        if {{@storage}::list::%arg-1%::location} is set:
+            Warps_Teleport(player, Warps_NameToID(arg-1))
+        else if player has permission "{@permission}":
+            if arg-1 is "set":
+                if arg-2 and arg-3 is set:
+                    set {_id} to Warps_NameToID(arg-2)
+                    set {{@storage}::list::%{_id}%::location} to location of player
+                    set {{@storage}::list::%{_id}%::name} to arg-2
+                    set {{@storage}::list::%{_id}%::required} to arg-3
+                    send "{@prefix} &7Warp &e%arg-2% &7is now set at your location, with rank %arg-3% required"
+                else:
+                    send "{@prefix} &cUsage: &c/warp set <name> <rank>"
+            else if arg-1 is "list":
+                send "{@prefix} &7Warps: %all indices of {{@storage}::list::*}%"
+            else if arg-1 is "get":
+                if {{@storage}::list::%arg-2%::location} is set:
+                    give player {@item} named "{@name} %arg-2%"
+                else:
+                    send "{@prefix} &cUsage: &c/warp get <name>"
+
+
+on place of {@item}:
+    name of player's tool contains "{@name}"
+    set {_id} to name of player's tool in lower case
+    replace all "{@name} " in {_id} with ""
+    replace all " " in {_id} with "_"
+    broadcast {_id}
+    set {{@storage}::locations::%location of event-block%} to {_id}
+
+on break of {@item}:
+    {{@storage}::locations::%location of event-block%} is set
+    delete {{@storage}::locations::%location of event-block%}
+    send "{@prefix} &cWarp deleted"
+
+on rightclick on {@item}:
+    {{@storage}::locations::%location of event-block%} is set
+    Warps_Teleport(player, {{@storage}::locations::%location of event-block%})
+
+
