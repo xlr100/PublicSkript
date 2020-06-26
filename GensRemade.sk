@@ -130,7 +130,8 @@ on inventory click:
     {player::%uuid of player%::inventory} contains "gen_upgrade"
     cancel event
     if index of event-slot is {@slot}:
-        set {_level} to last element of {player::%uuid of player%::inventory} split at "." parsed as integer
+        set {_temp} to last element of {player::%uuid of player%::inventory} split at "."
+        set {_level} to "%{_temp}%" parsed as integer
         set {_level2} to {_level} + 1
         if {player::%uuid of player%::money} >= {{@storage}::info::%{_level}%::upgrade.price}:
             loop {{@storage}::info::%{_level}%::upgrade.items::*}:
