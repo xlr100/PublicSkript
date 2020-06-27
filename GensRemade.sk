@@ -150,7 +150,8 @@ on inventory click:
         close player's inventory
 
 on death of player:
-    set {_temp::*} to drops
+    set {_temp::*} to all items in player's inventory
+    wait 3 seconds
     loop {_temp::*}:
         if name of loop-value contains "{@name}":
             give loop-value to victim
