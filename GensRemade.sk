@@ -149,6 +149,12 @@ on inventory click:
             send "{@prefix} &cYou do not have enough coins"
         close player's inventory
 
+on death of player:
+    set {_temp::*} to drops
+    loop {_temp::*}:
+        if name of loop-value contains "{@name}":
+            give loop-value to victim
+
 on inventory close:
     delete {player::%uuid of player%::inventory}
     delete {player::%uuid of player%::{@storage}::upgrading}
