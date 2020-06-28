@@ -1,0 +1,195 @@
+options:
+    prefix: &b&lShop »
+
+function notenough(p: player):
+    send "{@prefix} &cYou don't have enough money" to {_p}
+
+function moneyleft(p: player):
+    set {_bal} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%{_p}'s balance%"
+    replace all "$" in {_bal} with ""
+    send "{@prefix} &7Your balance is now &a%{_bal}%&a$" to {_p}
+
+command /shop:
+    trigger:
+        set {_menu} to chest inventory with 4 rows named "Shop"
+        loop integers from 0 to 35:
+            set slot loop-value of {_menu} to black glass pane named " "
+        set slot 11 of {_menu} to grass named "&2&lBlocks"
+        set slot 21 of {_menu} to diamond named "&b&lOres"
+        set slot 13 of {_menu} to redstone dust named "&c&lRedstone"
+        set slot 23 of {_menu} to spawner named "&b&lSpawners"
+        set slot 15 of {_menu} to wheat seeds named "&a&lFarming"
+        set slot 27 of {_menu} to barrier named "&cClose"
+        open {_menu} to player
+        set {inventory::%uuid of player%} to "main.shop"
+
+
+command /blocks:
+    trigger:
+        set {_menu} to chest inventory with 6 rows named "Blocks Shop"
+        set slot 1 of {_menu} to dirt named "&bDirt" lored "&7Price: &a5$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 2 of {_menu} to cobblestone named "&bCobblestone" lored "&7Price: &a15$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 3 of {_menu} to grass block named "&bGrass" lored "&7Price: &a10$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 4 of {_menu} to oak wood log named "&bOak Wood" lored "&7Price: &a20$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 5 of {_menu} to stone named "&bStone" lored "&7Price: &a20$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 6 of {_menu} to glowstone named "&bGlowstone" lored "&7Price: &a50$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 7 of {_menu} to netherrack named "&bNetherrack" lored "&7Price: &a10$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 8 of {_menu} to nether brick named "&bNether Brick" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 10 of {_menu} to quartz block named "&bQuartz Block" lored "&7Price: &a10$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 11 of {_menu} to ice named "&bIce" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 12 of {_menu} to packed ice named "&bPacked Ice" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 13 of {_menu} to sea lantern named "&bSea Lantern" lored "&7Price: &a50$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 14 of {_menu} to glass named "&bGlass" lored "&7Price: &a10$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 15 of {_menu} to sponge named "&bSponge" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 16 of {_menu} to sand named "&bSand" lored "&7Price: &a10$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set {_slot} to 0
+        loop 6 times:
+            set slot {_slot} of {_menu} to red glass pane named "&cBack"
+            add 9 to {_slot}
+        set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%player's balance%"
+        replace all "$" in {_m} with ""
+        set slot 49 of {_menu} to golden nugget named "&6Balance: &7%{_m}%$"
+        open {_menu} to player
+        set {inventory::%uuid of player%} to "blocks.shop"
+
+command /ores:
+    trigger:
+        set {_menu} to chest inventory with 6 rows named "Ores Shop"
+        set slot 1 of {_menu} to emerald ore named "&bEmerald Ore" lored "&7Price: &a1,000$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 2 of {_menu} to diamond ore named "&bDiamond Ore" lored "&7Price: &a500$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 3 of {_menu} to iron ore named "&bIron Ore" lored "&7Price: &a50$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 4 of {_menu} to lapis ore named "&bLapis Ore" lored "&7Price: &a40$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 5 of {_menu} to redstone ore named "&bRedstone Ore" lored "&7Price: &a30$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 6 of {_menu} to gold ore named "&bGold Ore" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 7 of {_menu} to coal ore named "&bCoal Ore" lored "&7Price: &a10$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set {_slot} to 0
+        loop 6 times:
+            set slot {_slot} of {_menu} to red glass pane named "&cBack"
+            add 9 to {_slot}
+        set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%player's balance%"
+        replace all "$" in {_m} with ""
+        set slot 49 of {_menu} to golden nugget named "&6Balance: &7%{_m}%$"
+        open {_menu} to player
+        set {inventory::%uuid of player%} to "ores.shop"
+
+command /redstone:
+    trigger:
+        set {_menu} to chest inventory with 6 rows named "Redstone Shop"
+        set slot 1 of {_menu} to hopper named "&bHopper" lored "&7Price: &a1,000$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 2 of {_menu} to normal piston named "&bPiston" lored "&7Price: &a200$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 3 of {_menu} to sticky piston named "&bSticky Piston" lored "&7Price: &a250$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 4 of {_menu} to observer named "&bObserver" lored "&7Price: &a1,500$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 5 of {_menu} to redstone named "&bRedstone" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 6 of {_menu} to repeater named "&bRepeater" lored "&7Price: &a75$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 7 of {_menu} to comparator named "&bComparator" lored "&7Price: &a100$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 8 of {_menu} to redstone block named "&bRedstone Block" lored "&7Price: &a275$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 10 of {_menu} to redstone torch named "&bRedstone Torch" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set {_slot} to 0
+        loop 6 times:
+            set slot {_slot} of {_menu} to red glass pane named "&cBack"
+            add 9 to {_slot}
+        set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%player's balance%"
+        replace all "$" in {_m} with ""
+        set slot 49 of {_menu} to gold nugget named "&6Balance: &7%{_m}%$"      
+        open {_menu} to player
+        set {inventory::%uuid of player%} to "redstone.shop"
+       
+command /farming:
+    trigger:
+        set {_menu} to chest inventory with 6 rows named "Farming Shop"
+        set slot 1 of {_menu} to diamond hoe named "&bDiamond Hoe" lored "&7Price: &a100$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 2 of {_menu} to water bucket named "&bWater Bucket" lored "&7Price: &a25$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 3 of {_menu} to lava bucket named "&bLava Bucket" lored "&7Price: &a30$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 4 of {_menu} to wheat seeds named "&bWheat Seeds" lored "&7Price: &a5$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 5 of {_menu} to wheat named "&bWheat" lored "&7Price: &a10$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 6 of {_menu} to sugar cane named "&bSugar Cane" lored "&7Price: &a50$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"
+        set slot 7 of {_menu} to cactus named "&bCactus" lored "&7Price: &a100$||&eLeft-Click &7to buy||&eRight-Click &7for mass buy"   
+        set {_slot} to 0
+        loop 6 times:
+            set slot {_slot} of {_menu} to red glass pane named "&cBack"
+            add 9 to {_slot}
+        set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%player's balance%"
+        replace all "$" in {_m} with ""
+        set slot 49 of {_menu} to golden nugget named "&6Balance: &7%{_m}%$"
+        open {_menu} to player
+        set {inventory::%uuid of player%} to "farming.shop"
+ 
+        
+on inventory click:
+    if {inventory::%uuid of player%} contains "shop":
+        cancel event
+        if {inventory::%uuid of player%} is "main.shop":
+            if name of event-slot isn't " ":
+                if event-slot is barrier:
+                    close player's inventory
+                else:
+                    set {_name} to uncolored name of event-slot
+                    replace all " " in {_name} with ""
+                    make player execute command "/%{_name}%"                
+        else:
+            if event-slot is red glass pane:
+                if {inventory::%uuid of player%} doesn't contain "mass":
+                    make player execute command "/shop"
+                else:
+                    set {_temp::*} to {inventory::%uuid of player%} split at "."
+                    replace all "_" in {_temp::*} with ""
+                    make player execute command "/%last element of {_temp::*}%"
+            else if event-slot isn't air:
+                set {_cost} to uncolored line 1 of lore of event-slot
+                set {_name} to name of event-slot
+                set {_price} to {_cost}
+                replace all "Price: " and "$" and "," in {_price} with ""
+                set {_price} to {_price} parsed as integer
+                set {_item} to event-slot
+                if {inventory::%uuid of player%} doesn't contain "mass":
+                    if click type is left mouse button:
+                        if player's balance >= {_price}:
+                            remove {_price} from player's balance
+                            set {_item} to "%type of {_item}%" parsed as itemtype
+                            
+                            set {_price} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in {_price}
+                            send "{@prefix} &7You bought &c%uncolored {_name}% &7for &a%{_price}%&a$"
+                            set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%player's balance%"
+                            replace all "$" in {_m} with ""
+                            set slot 49 of player's current inventory to golden nugget named "&6Balance: &7%{_m}%$"
+                            give player {_item}
+                        else if player's balance < {_price}:
+                            notenough(player)
+                    else if click type is right mouse button:
+                        set {_menu} to chest inventory with 3 rows named "%uncolored {_name}% Shop"
+                        loop integers from 0 to 26:
+                            set slot loop-value of {_menu} to light blue glass pane named " "
+                        set {_num} to 1
+                        loop 8 times:
+                            set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%{_price} * {_num} * 8%"
+                            set slot {_num} + 9 of {_menu} to {_num} * 8 of {_item} named "&bx%{_num} * 8% %{_name}%" lored "&7Price: &a%{_m}%$"
+                            add 1 to {_num}
+                        set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%player's balance%"
+                        replace all "$" in {_m} with ""
+                        set slot 4 of {_menu} to golden nugget named "&6Balance: &7%{_m}%$"
+                        set {_slot} to 0
+                        loop 3 times:
+                            set slot {_slot} of {_menu} to red glass pane named "&cBack"
+                            add 9 to {_slot}
+                        set {_temp::*} to {inventory::%uuid of player%} split at "."                       
+                        open {_menu} to player
+                        replace all " " in {_item} with "_"
+                        set {inventory::%uuid of player%} to "%{_item}%.shop.mass.%{_temp::1}%"
+                else:
+                    if player's balance >= {_price}:
+                        remove {_price} from player's balance
+                        set {_item} to "%type of {_item}%" parsed as itemtype
+                        set {_price} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%{_price}%"
+                        send "{@prefix} &7You bought &c%uncolored {_name}% &7for &a%{_price}%&a$"
+                        moneyleft(player)
+                        set {_m} to regex replace "(?<=\d)(?=(\d{3})+(?!\d))" with "," in "%player's balance%"
+                        replace all "$" in {_m} with ""
+                        set slot 4 of player's current inventory to golden nugget named "&6Balance: &7%{_m}%$"
+                        give player item amount of event-slot of {_item}
+                    else if player's balance < {_price}:
+                        notenough(player)
+
+
+on inventory close:
+    delete {inventory::%uuid of player%}
+
