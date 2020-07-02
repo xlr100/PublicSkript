@@ -1,5 +1,6 @@
 #Made by xlr100#6932 (For any bugs)
-#version: 1.3 (Added the ability to clear punishments)
+#v1.3 - Added the ability to clear punishments
+#version: 1.4 (Improved efficiency)
 #--------------------------------------------------------
 #Configuration
 variables:
@@ -35,18 +36,6 @@ function Time_Register():
     clear {letters::*}
     set {_str} to "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,/,!,@,##,$,%%,^,*,(,),{,},[,],"",|,;,',`,?"
     set {letters::*} to {_str} split at ","
-
-function PunishTime_Register():
-    #Mutes
-    set {punish.time::mute::1} to "5 Minutes" 
-    set {punish.time::mute::2} to "30 Minutes" 
-    set {punish.time::mute::3} to "1 Hour" 
-    set {punish.time::mute::4} to "1 Day"
-    #Bans
-    set {punish.time::ban::1} to "1 Hour" 
-    set {punish.time::ban::2} to "12 Hours" 
-    set {punish.time::ban::3} to "1 Day" 
-    set {punish.time::ban::4} to "30 Days"
 
 function PunishColor_Register():
     clear {punish.color::*}
@@ -402,3 +391,4 @@ on connect:
                 kick player due to "&cYou are banned! You can rejoin in %difference between {_wait} and {_need}% &7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
         else:
             kick player due to "&cYou are perm banned! &7Since: &b%{bans::%{_id}%::when}% &7Staff: &b%{bans::%{_id}%::staff}% &7Reason: &b%{bans::%{_id}%::reason}%"
+
