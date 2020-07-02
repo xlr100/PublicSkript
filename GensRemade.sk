@@ -51,39 +51,66 @@ command /gen <number>:
         else:
             send "{@prefix} &cThis gen doesn't exist"
 
+on skript start:
+    wait 1 second
+    add 1 to {{@storage}.id}
+
+on join:
+    {player::%uuid of player%::gens::*} is set
+    loop all indices of {player::%uuid of player%::gens::*}:
+        if {player::%uuid of player%::gens::%loop-value%::exist} isn't {{@storage}.id}:
+            create holo object "&bLevel %loop-value% Generator &e[%player%]" with id "gen.%player%.%loop-value%" at {player::%uuid of player%::gens::%loop-value%::location}
+            set {player::%uuid of player%::gens::%loop-value%::exist} to {{@storage}.id}
+
 on place of {@gen item}:
     name of player's tool contains "{@name}"
     if block above event-block is air:
-        send title "&aRIGHT CLICK!" with subtitle "&fTo earn coins" for 3 seconds
-        play "{@sound}" to player at volume 20 and pitch 1
         set {_level} to String_numbersFromString(uncolored name of player's tool)
-        remove 1 of player's tool from player's tool
-        set block above event-block to {{@storage}::info::%{_level}%::block}
-        set block at event-block's location to {@gen block}
-        set {{@storage}::placed::%location of event-block%::owner} to player
-        set {{@storage}::placed::%location of event-block%::level} to {_level}
-        send "{@prefix} &7Gen has been placed"
+        if {player::%uuid of player%::gens::*} doesn't contain {_level}:
+            send title "&aRIGHT CLICK!" with subtitle "&fTo earn coins" for 3 seconds
+            play "{@sound}" to player at volume 20 and pitch 1
+            remove 1 of player's tool from player's tool
+            set block above event-block to {{@storage}::info::%{_level}%::block}
+            set block at event-block's location to {@gen block}
+            set {{@storage}::placed::%location of event-block%::owner} to player
+            set {{@storage}::placed::%location of event-block%::level} to {_level}
+            set {_loc} to location 2.1 meters above event-block
+            set {player::%uuid of player%::gens::%{_level}%::location} to {_loc}
+            set {player::%uuid of player%::gens::%{_level}%::exist} to {{@storage}.id}
+            create holo object "&bLevel %{_level}% Generator &e[%player%]" with id "gen.%player%.%{_level}%" at {_loc}
+            send "{@prefix} &7Gen has been placed"
+        else:
+            cancel event
+            send "{@prefix} &cYou already have a level &8%{_level}% &cgen"
     else:
         cancel event
         send "{@prefix} &7You can not place your gen here"
 
 on leftclick on {@gen block}:
-    {{@storage}::placed::%location of event-block%::level} is set
-    if {player::%uuid of player%::{@storage}::cooldown} isn't set:
-        set {_level} to {{@storage}::placed::%location of event-block%::level}
-        set {player::%uuid of player%::{@storage}::cooldown} to {{@storage}::info::%{_level}%::cooldown}
-        while {player::%uuid of player%::{@storage}::cooldown} > 0:
-            send actionbar "&c&l%{player::%uuid of player%::{@storage}::cooldown}%" to player
-            remove 1 from {player::%uuid of player%::{@storage}::cooldown}
-            wait 1 second
-        delete {player::%uuid of player%::{@storage}::cooldown}
-        set event-block to air
-        set block above event-block to air
-        give player 1 {@gen item} named "{@name} &e[Lvl. %{_level}%]"
-        delete {{@storage}::placed::%location of event-block%::*}
-        delete {{@storage}::placed::%location of event-block%}
-        send "{@prefix} &7Generator has been removed successfully"
-        play "{@sound}" to player at volume 20 and pitch 1
+    {{@storage}::placed::%location of event-block%::owner} is set
+    if {{@storage}::placed::%location of event-block%::owner} is player:
+        if {player::%uuid of player%::{@storage}::cooldown} isn't set:
+            set {_level} to {{@storage}::placed::%location of event-block%::level}
+            set {player::%uuid of player%::{@storage}::cooldown} to {{@storage}::info::%{_level}%::cooldown}
+            while {player::%uuid of player%::{@storage}::cooldown} > 0:
+                send action bar "&c&l%{player::%uuid of player%::{@storage}::cooldown}%" to player
+                remove 1 from {player::%uuid of player%::{@storage}::cooldown}
+                wait 1 second
+            delete {player::%uuid of player%::{@storage}::cooldown}
+            set event-block to air
+            set block above event-block to air
+            give player 1 {@gen item} named "{@name} &e[Lvl. %{_level}%]"
+            delete {player::%uuid of player%::gens::%{_level}%::location}
+            delete {player::%uuid of player%::gens::%{_level}%::exist}
+            delete {player::%uuid of player%::gens::%{_level}%}
+            delete holo object "gen.%player%.%{_level}%"
+            delete {{@storage}::placed::%location of event-block%::*}
+            delete {{@storage}::placed::%location of event-block%}
+            send "{@prefix} &7Generator has been removed successfully"
+            play "{@sound}" to player at volume 20 and pitch 1
+           
+    else:
+        send "{@prefix} &cYou don't own this gen"
 
 on break:
     {{@storage}::placed::%location of event-block%::level} or {{@storage}::placed::%location of block below event-block%::level} is set
@@ -150,12 +177,18 @@ on inventory click:
         close player's inventory
 
 on death of player:
-    set {_temp::*} to all items in player's inventory
-    wait 3 seconds
+    set {_temp::*} to all items in victim's inventory
     loop {_temp::*}:
         if name of loop-value contains "{@name}":
-            give loop-value to victim
+            add loop-value to {player::%uuid of victim%::items::*}
+    
+    
+on respawn:
+    wait 1 second
+    give {player::%uuid of player%::items::*} to player
+    delete {player::%uuid of player%::items::*}
 
 on inventory close:
     delete {player::%uuid of player%::inventory}
     delete {player::%uuid of player%::{@storage}::upgrading}
+
