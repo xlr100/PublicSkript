@@ -7,6 +7,7 @@ options:
     name: &aGenerator
     permission: gens.get
     slot: 13
+    respawn: 2 seconds #The time it takes to get the gens after death
 
 on load:
     Gen_Register(1, prismarine, 10, ("10.bone", "7.gunpowder" and "5.clay"), (10 bones, 6 gunpowder, 5 clay and 32 raw porkchop), 1000, 10)
@@ -138,11 +139,11 @@ on rightclick:
             if {player::%uuid of player%::{@storage}::cooldown} isn't set:
                 set {player::%uuid of player%::{@storage}::cooldown} to {{@storage}::info::%{_level}%::cooldown}
                 while {player::%uuid of player%::{@storage}::cooldown} > 0:
-                    send actionbar "&c&l%{player::%uuid of player%::{@storage}::cooldown}%" to player
+                    send action bar "&c&l%{player::%uuid of player%::{@storage}::cooldown}%" to player
                     remove 1 from {player::%uuid of player%::{@storage}::cooldown}
                     wait 1 second
                 delete {player::%uuid of player%::{@storage}::cooldown}
-                send actionbar "&a+$%{{@storage}::info::%{_level}%::money}%" to player
+                send action bar "&a+$%{{@storage}::info::%{_level}%::money}%" to player
                 add {{@storage}::info::%{_level}%::money} to {player::%uuid of player%::money}
                 loop {{@storage}::info::%{_level}%::get::*}:
                     set {_temp::*} to loop-value split at "."
@@ -178,15 +179,11 @@ on inventory click:
 
 on death of player:
     set {_temp::*} to all items in victim's inventory
+    wait {@respawn}
     loop {_temp::*}:
         if name of loop-value contains "{@name}":
-            add loop-value to {player::%uuid of victim%::items::*}
-    
-    
-on respawn:
-    wait 1 second
-    give {player::%uuid of player%::items::*} to player
-    delete {player::%uuid of player%::items::*}
+            give loop-value to victim
+
 
 on inventory close:
     delete {player::%uuid of player%::inventory}
