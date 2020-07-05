@@ -7,7 +7,7 @@ options:
     name: &aGenerator
     permission: gens.get
     slot: 13
-    respawn: 2 seconds #The time it takes to get the gens after death
+    #respawn: 2 seconds #The time it takes to get the gens after death
 
 on load:
     Gen_Register(1, prismarine, 10, ("10.bone", "7.gunpowder" and "5.clay"), (10 bones, 6 gunpowder, 5 clay and 32 raw porkchop), 1000, 10)
@@ -179,9 +179,10 @@ on inventory click:
 
 on death of player:
     set {_temp::*} to all items in victim's inventory
-    wait {@respawn}
+    wait 1 tick
+    force victim to respawn
     loop {_temp::*}:
-        if name of loop-value contains "{@name}":
+        if loop-value is a beacon:
             give loop-value to victim
 
 
