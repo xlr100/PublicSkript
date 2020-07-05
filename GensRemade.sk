@@ -178,12 +178,13 @@ on inventory click:
         close player's inventory
 
 on death of player:
-    set {_temp::*} to all items in victim's inventory
-    wait 1 tick
+    set {_temp::*} to all items in victim's inventory where [input is a beacon]
+    loop drops:
+        loop-value is a beacon
+        remove loop-value from drops
+    wait 2 ticks
     force victim to respawn
-    loop {_temp::*}:
-        if loop-value is a beacon:
-            give loop-value to victim
+    give {_temp::*} to victim
 
 
 on inventory close:
