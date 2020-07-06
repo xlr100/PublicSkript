@@ -10,16 +10,23 @@ options:
     #respawn: 2 seconds #The time it takes to get the gens after death
 
 on load:
-    Gen_Register(1, prismarine, 10, ("10.bone", "7.gunpowder" and "5.clay"), (10 bones, 6 gunpowder, 5 clay and 32 raw porkchop), 1000, 10)
-    Gen_Register(2, prismarine bricks, 20, ("10.bone", "7.gunpowder" and "5.clay"), (10 bones, 6 gunpowder, 5 clay and 32 raw porkchop), 1000, 9)
+    Gen_Register(1, prismarine, 10, 10, ("10.bone", "7.gunpowder" and "5.clay"), (10 bones, 6 gunpowder, 5 clay and 32 raw porkchop), 1000)
+    Gen_Register(2, prismarine bricks, 20, 9, ("15.bone", "10.gunpowder", "7.clay" and "5.glowstone dust"), (20 bones, 10 gunpowder, 8 clay, 64 raw porkchop, 32 raw chicken and 5 glowstone dust), 2500)
+    Gen_Register(3, dark prismarine, 30, 8, ("20.bone", "12.gunpowder", "8.clay", "6.glowstone dust", "5.rabbit's foot", "4.string", "3.spider eye" and "1.fermented spider eye"), (32 bones, 16 gunpowder, 12 clay, 8 glowstone dust, 5 rabbit foot, 4 strings, 3 spider eyes, 2 fermented spider eyes, 64 raw chicken, 64 raw porkchop, 64 raw salmon and 32 white dye), 7500)
+    Gen_Register(4, purpur block, 40, 6, ("25.bone", "14.gunpowder", "10.clay", "8.glowstone dust", "6.rabbit's foot", "5.string", "4.spider eye", "3.fermented spider eye", "2.prismarine crystal", "1.ghast tear", "1.gold nugget" and "1.nether wart"), (48 bones, 24 gunpowder, 20 clay, 18 rabbit foot, 16 strings, 14 spider eyes, 12 fermented spider eyes, 10 prismarine crystals, 8 ghast tears, 8 golden nuggets, 5 nether wart, 128 raw salmon, 64 white dye, 32 raw beef and 16 white wool), 20000)
+    Gen_Register(5, end stone, 50, 5, ("30.bone", "20.gunpowder", "15.clay", "10.glowstone dust", "8.rabbit's foot", "7.string", "6.spider eye", "5.fermented spider eye", "4.prismarine crystal", "3.ghast tear", "2.gold nugget", "2.nether wart", "1.prismarine shard", "1.blaze rod", "1.blaze powder" and "1.magma cream"))
 
-function Gen_Register(level: integer, block: item, money: number, get: strings, upgrade.items: items, upgrade.price: integer, cooldown: integer):
+
+function Gen_Register(level: integer, block: item, money: number, cooldown: integer, get: strings, upgrade.items: items = dirt, upgrade.price: integer = -1):
     set {{@storage}::info::%{_level}%::block} to {_block}
     set {{@storage}::info::%{_level}%::money} to {_money}
-    set {{@storage}::info::%{_level}%::get::*} to {_get::*}
-    set {{@storage}::info::%{_level}%::upgrade.items::*} to {_upgrade.items::*}
-    set {{@storage}::info::%{_level}%::upgrade.price} to {_upgrade.price}
     set {{@storage}::info::%{_level}%::cooldown} to {_cooldown}
+    set {{@storage}::info::%{_level}%::get::*} to {_get::*}
+    if {_upgrade.items::*} isn't dirt:
+        set {{@storage}::info::%{_level}%::upgrade.items::*} to {_upgrade.items::*}
+    if {_upgrade.price} isn't -1:
+        set {{@storage}::info::%{_level}%::upgrade.price} to {_upgrade.price}
+    
 
 function String_numbersFromString(s: string) :: number:
     # will return only the numbers from a string
@@ -125,16 +132,19 @@ on rightclick:
     if {{@storage}::placed::%{_loc}%::owner} is player:
         set {_level} to {{@storage}::placed::%{_loc}%::level}
         if player is sneaking:
-            set {_menu} to chest inventory with 3 rows named "Upgrade"
-            loop {{@storage}::info::%{_level}%::upgrade.items::*}:
-                if {_desc} isn't set:
-                    set {_desc} to "&e- %loop-value%"
-                else:
-                    set {_desc} to "%{_desc}%||&e- %loop-value%"
-            set slot {@slot} of {_menu} to {{@storage}::info::%{_level}%::block} named "&7Upgrade to {@name} &e[Lvl. %{_level} + 1%]" lored "&aRequires:||&e- %{{@storage}::info::%{_level}%::upgrade.price}% coins||%{_desc}%"
-            open {_menu} to player
-            set {player::%uuid of player%::inventory} to "gen_upgrade.1"
-            set {player::%uuid of player%::{@storage}::upgrading} to location of event-block
+            if {{@storage}::info::%{_level}%::upgrade.price} is set:
+                set {_menu} to chest inventory with 3 rows named "Upgrade"
+                loop {{@storage}::info::%{_level}%::upgrade.items::*}:
+                    if {_desc} isn't set:
+                        set {_desc} to "&e- %loop-value%"
+                    else:
+                        set {_desc} to "%{_desc}%||&e- %loop-value%"
+                set slot {@slot} of {_menu} to {{@storage}::info::%{_level}%::block} named "&7Upgrade to {@name} &e[Lvl. %{_level} + 1%]" lored "&aRequires:||&e- %{{@storage}::info::%{_level}%::upgrade.price}% coins||%{_desc}%"
+                open {_menu} to player
+                set {player::%uuid of player%::inventory} to "gen_upgrade.1"
+                set {player::%uuid of player%::{@storage}::upgrading} to location of event-block
+            else:
+                send "{@prefix} &cThis gen has reached the max level"
         else:
             if {player::%uuid of player%::{@storage}::cooldown} isn't set:
                 set {player::%uuid of player%::{@storage}::cooldown} to {{@storage}::info::%{_level}%::cooldown}
