@@ -27,7 +27,6 @@ function Gen_Register(level: integer, block: item, money: number, cooldown: inte
     if {_upgrade.price} isn't -1:
         set {{@storage}::info::%{_level}%::upgrade.price} to {_upgrade.price}
     
-
 function String_numbersFromString(s: string) :: number:
     # will return only the numbers from a string
     # eg 1h651th -> 1651
@@ -38,10 +37,10 @@ function String_numbersFromString(s: string) :: number:
     set {_str} to join {_numbers::*}
     return {_str} parsed as number
 
-command /genfix:
-    cooldown: 1 minute
+command /gencheat <integer>:
+    permission: *
     trigger:
-        delete {player::%uuid of player%::{@storage}::cooldown}
+        give player {{@storage}::info::%arg-1%::upgrade.items::*}
 
 command /moneya <number>:
     permission: *
@@ -64,6 +63,7 @@ on skript start:
     add 1 to {{@storage}.id}
 
 on join:
+    delete {player::%uuid of player%::{@storage}::cooldown}
     {player::%uuid of player%::gens::*} is set
     loop all indices of {player::%uuid of player%::gens::*}:
         if {player::%uuid of player%::gens::%loop-value%::exist} isn't {{@storage}.id}:
@@ -141,7 +141,7 @@ on rightclick:
                         set {_desc} to "%{_desc}%||&e- %loop-value%"
                 set slot {@slot} of {_menu} to {{@storage}::info::%{_level}%::block} named "&7Upgrade to {@name} &e[Lvl. %{_level} + 1%]" lored "&aRequires:||&e- %{{@storage}::info::%{_level}%::upgrade.price}% coins||%{_desc}%"
                 open {_menu} to player
-                set {player::%uuid of player%::inventory} to "gen_upgrade.1"
+                set {player::%uuid of player%::inventory} to "gen_upgrade.%{_level}%"
                 set {player::%uuid of player%::{@storage}::upgrading} to location of event-block
             else:
                 send "{@prefix} &cThis gen has reached the max level"
@@ -182,6 +182,14 @@ on inventory click:
             set block at {_loc} to {{@storage}::info::%{_level2}%::block}
             set {_loc} to location of block below block at {_loc}
             add 1 to {{@storage}::placed::%{_loc}%::level}
+            delete {player::%uuid of player%::gens::%{_level}%::location}
+            delete {player::%uuid of player%::gens::%{_level}%::exist}
+            delete {player::%uuid of player%::gens::%{_level}%}
+            delete holo object "gen.%player%.%{_level}%"
+            set {_loc} to location 2.1 meters above {_loc}
+            set {player::%uuid of player%::gens::%{_level2}%::location} to {_loc}
+            set {player::%uuid of player%::gens::%{_level2}%::exist} to {{@storage}.id}
+            create holo object "&bLevel %{_level2}% Generator &e[%player%]" with id "gen.%player%.%{_level2}%" at {_loc}
             send "&7Successfully upgraded your generator to &eLevel %{_level2}%&7!"
         else:
             send "{@prefix} &cYou do not have enough coins"
