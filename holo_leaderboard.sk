@@ -33,6 +33,9 @@ command /leaderboard [<text>] [<text>] [<text>] [<text>]:
             if arg-2 is "toggle":
                 set {{@storage}.refresh} to !({{@storage}.refresh} ? true)
                 send "{@prefix} &7Hologram auto refresh is now &e%{{@storage}.refresh}%"
+            else if arg-2 is "all":
+                loop all indices of {{@storage}::*}:
+                    Leaderboard_Reload(loop-value)
             else if {{@storage}::%arg-2%::name} is set:
                 broadcast "{@prefix} &aRefreshing %colored {{@storage}::%arg-2%::name}% &aleaderboard"
                 Leaderboard_Reload(arg-2)
@@ -59,8 +62,7 @@ command /leaderboard [<text>] [<text>] [<text>] [<text>]:
 every {@cd}:
     {{@storage}.refresh} ? true is true
     broadcast "{@prefix} &aReloading leaderboards"
-    loop all indices of {{@storage}::*}:
-        Leaderboard_Reload(loop-value)
+    execute console command "/leaderboard reload all"
 
 function Leaderboard_Reload(id: text):
     set {_topnumber} to 0
