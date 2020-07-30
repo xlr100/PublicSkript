@@ -1,0 +1,75 @@
+options:
+    storage: leaderboards
+    prefix: &e&lLeaderboards »
+    error.exist: "&cThis variable doesn't exist"
+    cd: 5 minutes
+    perm: *
+
+command /leaderboard [<text>] [<text>] [<text>] [<text>]:
+    permission: {@perm}
+    aliases: /lb
+    trigger:
+        if arg-1 is "create":
+            if {%arg-2%::*} is set:
+                add 1 to {holo.id}
+                set {{@storage}::%{holo.id}%::name} to arg-4
+                create new holo with line "&7» %colored {{@storage}::%{holo.id}%::name}% Leaderboard &7«" 3 meters above player and store in {{@storage}::%{holo.id}%::holo::*}
+                set {{@storage}::%{holo.id}%::variable::leaderboard} to arg-2
+                set {{@storage}::%{holo.id}%::variable::player} to arg-3
+                send colored "{@prefix} &aCreated hologram. ID: %{holo.id}% Leaderboard Variable: %arg-2% Player Variable: %arg-3% Name: %arg-4%"
+                wait 1 tick
+                Leaderboard_Reload("%{holo.id}%")
+            else:
+                send {@error.exist}
+        else if arg-1 is "delete":
+            if {{@storage}::%arg-2%::name} is set:
+                delete hologram {{@storage}::%arg-2%::holo::*}
+                clear {{@storage}::%arg-2%::*}
+                delete {{@storage}::%arg-2%}
+                send colored "{@prefix} &cDeleted hologram with ID &e%arg-2%"
+            else:
+                send {@error.exist}
+        else if arg-1 is "reload":
+            if arg-2 is "toggle":
+                set {{@storage}.refresh} to !({{@storage}.refresh} ? true)
+                send "{@prefix} &7Hologram auto refresh is now &e%{{@storage}.refresh}%"
+            else if {{@storage}::%arg-2%::name} is set:
+                broadcast "{@prefix} &aRefreshing %colored {{@storage}::%arg-2%::name}% &aleaderboard"
+                Leaderboard_Reload(arg-2)
+            else:
+                send {@error.exist}
+        else if arg-1 is "move":
+            if {{@storage}::%arg-2%::name} is set:
+                teleport holograms {{@storage}::%arg-2%::holo::*} to location 3 meters above player
+                send "{@prefix} &aMoved hologram with id &7%arg-2%"
+            else:
+                send {@error.exist}
+        else if arg-1 is "list":
+            if {{@storage}::*} is set:
+                loop all indices of {{@storage}::*}:
+                    send colored "&7ID: %loop-value% Variable (leaderboard): %{{@storage}::%loop-value%::variable::leaderboard}% Variable (player): %{{@storage}::%loop-value%::variable::player}% Name: %{{@storage}::%loop-value%::name}%"
+            else:
+                send "{@prefix} &cNo leaderboards exist"
+        else if arg-1 is "deleteall":
+            clear {{@storage}::*}
+            set {holo.id} to 0
+            send "{@prefix} &cDeleted all leaderboards"
+    
+
+every {@cd}:
+    {{@storage}.refresh} ? true is true
+    broadcast "{@prefix} &aReloading leaderboards"
+    loop all indices of {{@storage}::*}:
+        Leaderboard_Reload(loop-value)
+
+function Leaderboard_Reload(id: text):
+    set {_topnumber} to 0
+    set {_var.p} to {{@storage}::%{_id}%::variable::player}
+    loop {{@storage}::%{_id}%::holo::*}:
+        loop {%{{@storage}::%{_id}%::variable::leaderboard}%::*}:
+            add 1 to {_topnumber}
+            set {_p} to "%loop-value-2%" parsed as offline player
+            set {_value} to {player::%loop-value-2%::%{_var.p}%}
+            set line (1 + {_topnumber}) of loop-value-1 to "&e##%{_topnumber}%&7 &c%{_p}%: &7%{_value}%"
+            if {_topnumber} = 10:
+                stop
