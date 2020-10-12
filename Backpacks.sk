@@ -12,7 +12,6 @@ function Backpack_Create(rows: integer) :: item:
     add 1 to {{@storage}::backpacks}
     set {_id} to {{@storage}::backpacks}
     set {_item} to {@item} named "{@name} &7(##%{_id}%)" with all flags hidden
-    add "{id:%{_id}%}" to {_item}'s nbt
     set {{@storage}::id::%{_id}%::rows} to {_rows}
     loop integers from 0 to {_rows} * 9:
         set {{@storage}::id::%{_id}%::items::%loop-value%} to air
@@ -34,8 +33,9 @@ command /{@command} [<text>] <integer> <player>:
 
 on rightclick with {@item}:
     name of player's tool contains "{@name}"
-    set {_id} to "id" tag of nbt of player's tool
-    # broadcast "%{_id}%"
+    set {_name} to name of player's tool
+    replace all "{@name} &7(##" and ")" in {_name} with ""
+    set {_id} to uncolored {_name}
     set metadata value "backpack" of player to {_id}
     set {_menu} to chest inventory with {{@storage}::id::%{_id}%::rows} rows named "Backpack ##%{_id}%"
     set {_num} to -1
