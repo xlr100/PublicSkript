@@ -11,7 +11,7 @@ options:
 function Backpack_Create(rows: integer) :: item:
     add 1 to {{@storage}::backpacks}
     set {_id} to {{@storage}::backpacks}
-    set {_item} to {@item} named "{@name} &7(##%{_id}%)" with all flags hidden
+    set {_item} to {@item} named "{@name} &7(##%{_id}%)"
     set {{@storage}::id::%{_id}%::rows} to {_rows}
     loop integers from 0 to {_rows} * 9:
         set {{@storage}::id::%{_id}%::items::%loop-value%} to air
